@@ -1,37 +1,50 @@
 (() => {
+  let X_CELLS = 4;
+  let Y_CELLS = 4;
   let TIMEOUT = 60;
+  let INTERVAL = null;
+
+  const createTimeout = () => {
+    const timeout = document.createElement("div");
+    timeout.classList.add("timeout", "element-display");
+    timeout.textContent = `Осталось: ${TIMEOUT} сек.`;
+
+    return {
+      timeout,
+    };
+  };
 
   const createMenu = () => {
     const menuContainer = document.createElement("div");
     menuContainer.classList.add("menu-container");
 
-    const horizontal = document.createElement("input");
-    horizontal.classList.add("menu-input");
+    const xInput = document.createElement("input");
+    xInput.classList.add("menu-input");
     const xLabel = document.createElement("label");
     xLabel.classList.add("menu-label");
-    xLabel.textContent = "Введите четное число от 2-х до 10 (по-умолчанию: 4)";
+    xLabel.textContent = "ШИРИНА ПОЛЯ: От 2-х до 10 (по-умолчанию: 4)";
 
-    const vertical = document.createElement("input");
-    vertical.classList.add("menu-input");
+    const yInput = document.createElement("input");
+    yInput.classList.add("menu-input");
     const yLabel = document.createElement("label");
     yLabel.classList.add("menu-label");
-    yLabel.textContent = "Введите четное число от 2-х до 10 (по-умолчанию: 4)";
+    yLabel.textContent = "ВЫСОТА ПОЛЯ: От 2-х до 10 (по-умолчанию: 4)";
 
-    const menuButton = document.createElement("button");
-    menuButton.classList.add("menu-button");
-    menuButton.textContent = "Начать игру";
+    const startButton = document.createElement("button");
+    startButton.classList.add("menu-button");
+    startButton.textContent = "Начать игру";
 
     menuContainer.append(xLabel);
-    menuContainer.append(horizontal);
+    menuContainer.append(xInput);
     menuContainer.append(yLabel);
-    menuContainer.append(vertical);
-    menuContainer.append(menuButton);
+    menuContainer.append(yInput);
+    menuContainer.append(startButton);
 
     return {
       menuContainer,
-      menuButton,
-      horizontal,
-      vertical,
+      startButton,
+      xInput,
+      yInput,
     };
   };
 
@@ -53,29 +66,14 @@
   };
 
   const createField = (x, y) => {
-    let numbers = [];
     const fieldSize = getFieldSize(x, y);
-    let elements = (fieldSize.x * fieldSize.y) / 2;
-
-    for (let i = 1; i <= elements; i++) {
-      numbers.push(i);
-      numbers.push(i);
-    }
-
-    const shuffle = (array) => {
-      for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    };
-
-    shuffle(numbers);
+    const numbers = getNumbersArray(fieldSize);
 
     const container = document.createElement("div");
     container.classList.add("container", "element-display");
 
     const fieldContainer = document.createElement("div");
-    fieldContainer.classList.add("items-container");
+    fieldContainer.classList.add("items-container", `w-${x}`, `h-${y}`);
 
     const exitButton = document.createElement("button");
     exitButton.classList.add("menu-button");
@@ -92,103 +90,55 @@
     };
   };
 
-  const createTimeout = () => {
-    const timeout = document.createElement("div");
-    timeout.classList.add("timeout", "element-display");
-    timeout.textContent = `Осталось: ${TIMEOUT} сек.`;
+  const exitGame = ({ field, menu, timeout }) => {
+    clearInterval(INTERVAL);
+    X_CELLS = Y_CELLS = 4;
+    TIMEOUT = 60;
+    field.remove();
 
-    return {
-      timeout,
-    };
-  };
-
-  const toggleView = (firstEl, secondEl) => {
-    firstEl.classList.toggle("element-display");
-    secondEl.classList.toggle("element-display");
-  };
-
-  const startGame = ({ field, menu, startTimeout }) => {
-    startTimeout();
-    toggleView(field, menu);
-  };
-
-  const exitGame = ({ field, menu, stopTimeout }) => {
     const items = document.querySelectorAll(".item-content");
+    toggleClass(field, menu, "element-display");
+    timeout.classList.toggle("element-display");
     items.forEach((el) => el.classList.remove("item-content-active"));
-    toggleView(field, menu);
-    stopTimeout();
-  };
-
-  const getFieldSize = (x, y) => {
-    let defaultX = 4;
-    let defaultY = 4;
-
-    let numX = Number(x);
-    let numY = Number(y);
-
-    if (numX % 2 === 0 && numX >= 2 && numX <= 10) defaultX = numX;
-    if (numY % 2 === 0 && numY >= 2 && numY <= 10) defaultY = numY;
-
-    return {
-      x: defaultX,
-      y: defaultY,
-    };
+    timeout.textContent = `Осталось: ${TIMEOUT} сек.`;
   };
 
   document.addEventListener("DOMContentLoaded", () => {
     root = document.getElementById("root");
-    let time;
-    let x;
-    let y;
 
-    const {
-      menuContainer: menu,
-      menuButton,
-      horizontal,
-      vertical,
-    } = createMenu();
-
-    horizontal.addEventListener("input", (e) => {
-      x = e.target.value;
-    });
-
-    vertical.addEventListener("input", (e) => {
-      y = e.target.value;
-    });
-
-    const { exitButton, container: field } = createField(x, y);
     const { timeout } = createTimeout();
+    const { menuContainer: menu, startButton, xInput, yInput } = createMenu();
 
-    menuButton.addEventListener("click", () => {
-      startGame({ menu, field, startTimeout });
-      horizontal.value = "";
-      vertical.value = "";
+    xInput.addEventListener("input", (e) => {
+      X_CELLS = e.target.value;
     });
 
-    exitButton.addEventListener("click", () =>
-      exitGame({ field, menu, stopTimeout })
-    );
+    yInput.addEventListener("input", (e) => {
+      Y_CELLS = e.target.value;
+    });
 
-    const startTimeout = () => {
-      time = setInterval(() => {
+    startButton.addEventListener("click", () => {
+      const { exitButton, container: field } = createField(X_CELLS, Y_CELLS);
+      toggleClass(field, menu, "element-display");
+      timeout.classList.remove("element-display");
+
+      INTERVAL = setInterval(() => {
         timeout.textContent = `Осталось: ${TIMEOUT--} сек.`;
         if (TIMEOUT === -1) {
           alert("Вы не успели за 1 минуту!");
-          exitGame({ field, menu, stopTimeout });
+          exitGame({ field, menu, timeout });
         }
       }, 1000);
-      timeout.classList.remove("element-display");
-    };
 
-    const stopTimeout = () => {
-      clearInterval(time);
-      TIMEOUT = 60;
-      timeout.textContent = `Осталось: ${TIMEOUT} сек.`;
-      timeout.classList.toggle("element-display");
-    };
+      exitButton.addEventListener("click", () => {
+        exitGame({ field, menu, timeout });
+      });
+
+      xInput.value = yInput.value = "";
+      root.append(field);
+    });
 
     root.append(menu);
-    root.append(field);
     root.append(timeout);
   });
 })();
