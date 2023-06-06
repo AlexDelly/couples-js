@@ -3,6 +3,9 @@
   let Y_CELLS = 4;
   let TIMEOUT = 60;
   let INTERVAL = null;
+  let isLookingCouple = false;
+  let elementToLookCouple = null;
+  let foundElements = [];
 
   const createTimeout = () => {
     const timeout = document.createElement("div");
@@ -22,13 +25,15 @@
     xInput.classList.add("menu-input");
     const xLabel = document.createElement("label");
     xLabel.classList.add("menu-label");
-    xLabel.textContent = "ШИРИНА ПОЛЯ: От 2-х до 10 (по-умолчанию: 4)";
+    xLabel.textContent =
+      "ШИРИНА ПОЛЯ: Чётное число от 2-х до 10 (по-умолчанию: 4)";
 
     const yInput = document.createElement("input");
     yInput.classList.add("menu-input");
     const yLabel = document.createElement("label");
     yLabel.classList.add("menu-label");
-    yLabel.textContent = "ВЫСОТА ПОЛЯ: От 2-х до 10 (по-умолчанию: 4)";
+    yLabel.textContent =
+      "ВЫСОТА ПОЛЯ: Чётное число от 2-х до 10 (по-умолчанию: 4)";
 
     const startButton = document.createElement("button");
     startButton.classList.add("menu-button");
@@ -48,7 +53,7 @@
     };
   };
 
-  const createItem = (num) => {
+  const createItem = (num, elements, timeout, menu, field) => {
     const item = document.createElement("div");
     item.classList.add("item");
 
@@ -58,15 +63,53 @@
 
     item.append(content);
 
-    item.addEventListener("click", () => {
-      content.classList.toggle("item-content-active");
+    const findCouple = (el) => {
+      if (el.textContent === elementToLookCouple.textContent) {
+        el.classList.toggle("item-content-active");
+        foundElements.push(el.textContent);
+        isLookingCouple = false;
+        elementToLookCouple = null;
+
+        if (foundElements.length === elements) {
+          let finishInterval = setInterval(() => {
+            alert("Вы справились!");
+            exitGame({ field, menu, timeout });
+            clearInterval(finishInterval);
+          }, 100);
+        }
+      } else {
+        el.classList.toggle("item-content-active");
+
+        let itemInterval = setInterval(() => {
+          el.classList.toggle("item-content-active");
+          elementToLookCouple.classList.toggle("item-content-active");
+          elementToLookCouple = null;
+          isLookingCouple = false;
+          foundElements.pop();
+          clearInterval(itemInterval);
+        }, 100);
+      }
+    };
+
+    item.addEventListener("click", (e) => {
+      if (e.target !== elementToLookCouple) {
+        if (!isLookingCouple) {
+          content.classList.toggle("item-content-active");
+          elementToLookCouple = e.target;
+          foundElements.push(e.target.textContent);
+          isLookingCouple = true;
+        } else {
+          findCouple(content);
+        }
+      }
     });
 
     return item;
   };
 
-  const createField = (x, y) => {
+  const createField = (x, y, timeout, menu) => {
     const fieldSize = getFieldSize(x, y);
+    const elements = fieldSize.x * fieldSize.y;
     const numbers = getNumbersArray(fieldSize);
 
     const container = document.createElement("div");
@@ -79,7 +122,9 @@
     exitButton.classList.add("menu-button");
     exitButton.textContent = "Выйти";
 
-    numbers.forEach((el) => fieldContainer.append(createItem(el)));
+    numbers.forEach((el) =>
+      fieldContainer.append(createItem(el, elements, timeout, menu, container))
+    );
 
     container.append(fieldContainer);
     container.append(exitButton);
@@ -94,6 +139,9 @@
     clearInterval(INTERVAL);
     X_CELLS = Y_CELLS = 4;
     TIMEOUT = 60;
+    isLookingCouple = false;
+    elementToLookCouple = null;
+    foundElements = [];
     field.remove();
 
     const items = document.querySelectorAll(".item-content");
@@ -118,7 +166,12 @@
     });
 
     startButton.addEventListener("click", () => {
-      const { exitButton, container: field } = createField(X_CELLS, Y_CELLS);
+      const { exitButton, container: field } = createField(
+        X_CELLS,
+        Y_CELLS,
+        timeout,
+        menu
+      );
       toggleClass(field, menu, "element-display");
       timeout.classList.remove("element-display");
 
