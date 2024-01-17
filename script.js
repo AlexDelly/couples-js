@@ -10,7 +10,7 @@
   const createTimeout = () => {
     const timeout = document.createElement("div");
     timeout.classList.add("timeout", "element-display");
-    timeout.textContent = `Осталось: ${TIMEOUT} сек.`;
+    timeout.textContent = `Time left: ${TIMEOUT} sec.`;
 
     return {
       timeout,
@@ -25,15 +25,13 @@
     xInput.classList.add("menu-input");
     const xLabel = document.createElement("label");
     xLabel.classList.add("menu-label");
-    xLabel.textContent =
-      "Width: Even 2-10 (default: 4)";
+    xLabel.textContent = "Width: Even 2-10 (default: 4)";
 
     const yInput = document.createElement("input");
     yInput.classList.add("menu-input");
     const yLabel = document.createElement("label");
     yLabel.classList.add("menu-label");
-    yLabel.textContent =
-      "Height: Even 2-10 (default: 4)";
+    yLabel.textContent = "Height: Even 2-10 (default: 4)";
 
     const startButton = document.createElement("button");
     startButton.classList.add("menu-button");
@@ -120,7 +118,7 @@
 
     const exitButton = document.createElement("button");
     exitButton.classList.add("menu-button");
-    exitButton.textContent = "Выйти";
+    exitButton.textContent = "Exit";
 
     numbers.forEach((el) =>
       fieldContainer.append(createItem(el, elements, timeout, menu, container))
