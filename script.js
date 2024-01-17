@@ -26,18 +26,18 @@
     const xLabel = document.createElement("label");
     xLabel.classList.add("menu-label");
     xLabel.textContent =
-      "ШИРИНА ПОЛЯ: Чётное число от 2-х до 10 (по-умолчанию: 4)";
+      "Width: Even 2-10 (default: 4)";
 
     const yInput = document.createElement("input");
     yInput.classList.add("menu-input");
     const yLabel = document.createElement("label");
     yLabel.classList.add("menu-label");
     yLabel.textContent =
-      "ВЫСОТА ПОЛЯ: Чётное число от 2-х до 10 (по-умолчанию: 4)";
+      "Height: Even 2-10 (default: 4)";
 
     const startButton = document.createElement("button");
     startButton.classList.add("menu-button");
-    startButton.textContent = "Начать игру";
+    startButton.textContent = "Start game";
 
     menuContainer.append(xLabel);
     menuContainer.append(xInput);
@@ -72,7 +72,7 @@
 
         if (foundElements.length === elements) {
           let finishInterval = setInterval(() => {
-            alert("Вы справились!");
+            alert("Success!");
             exitGame({ field, menu, timeout });
             clearInterval(finishInterval);
           }, 100);
@@ -148,7 +148,7 @@
     toggleClass(field, menu, "element-display");
     timeout.classList.toggle("element-display");
     items.forEach((el) => el.classList.remove("item-content-active"));
-    timeout.textContent = `Осталось: ${TIMEOUT} сек.`;
+    timeout.textContent = `Time left: ${TIMEOUT} sec.`;
   };
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -176,9 +176,9 @@
       timeout.classList.remove("element-display");
 
       INTERVAL = setInterval(() => {
-        timeout.textContent = `Осталось: ${TIMEOUT--} сек.`;
+        timeout.textContent = `Time left: ${TIMEOUT--} sec.`;
         if (TIMEOUT === -1) {
-          alert("Вы не успели за 1 минуту!");
+          alert("Failed! Timed out");
           exitGame({ field, menu, timeout });
         }
       }, 1000);
